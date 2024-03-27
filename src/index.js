@@ -1,45 +1,21 @@
-import { createStore } from "redux";
+//vanilla js todoList는 데이터가 존재하지 않는다. 단지 html을 수정하는 것이다.
+//예를 들어 우리가 todo를 삭제하고 싶다면 데이터(상태)가 없기 때문에 그 일을 수행할 수 없다.
+//이 때 배열을 사용하여 데이터를 만들고, 로컬 저장소에 데이터를 저장하면 비로서 애플리케이션에 데이터가 존재하게 된다.
+const form = document.querySelector("form");
+const input = document.querySelector("input");
+const ul = document.querySelector("ul");
 
-const add = document.getElementById("add");
-const minus = document.getElementById("minus");
-const number = document.querySelector("span");
-
-const ADD = "ADD";
-const MINUS = "MINUS";
-
-//reducer라고 불리는 함수는 애플리케이션의 데이터(상태)를 수정하고 그 결과를 반환한다.
-//데이터를 변경할 때는 dispatch(action)를 사용해서 reducer()에게 요청한다.
-//이 때 어떻게 데이터를 변경할 것인가 소통하는 방법이 action이라는 object의 type를 통해서 소통한다.(임의로 속성명 바꾸면 안됨)
-//그리고 데이터의 변화를 subscribe(listener)를 사용해서 상태 변경시 어떻게 할 것인가 정의해 놓은 listener를 통해 반영해 준다.
-//redux 제공 api -> createStore(), dispatch(), subscribe()
-//사용자 정의 함수 reducer(상태를 수정하는 함수), action(변경 방식에 대한 객체), listener(상태 변경시 발생하는 이벤트 정의)
-
-const countModifier = (count = 0, action) => {
-  switch (action.type) {
-    case ADD:
-      return count + 1;
-    case MINUS:
-      return count - 1;
-    default:
-      return count;
-  }
+const createTodo = (todo) => {
+  const li = document.createElement("li");
+  li.innerText = todo;
+  ul.appendChild(li);
 };
 
-const countStore = createStore(countModifier);
-
-const handleAdd = () => {
-  countStore.dispatch({ type: ADD });
+const onSubmit = (e) => {
+  e.preventDefault();
+  const todo = input.value;
+  input.value = "";
+  createTodo(todo);
 };
 
-const handleMinus = () => {
-  countStore.dispatch({ type: MINUS });
-};
-
-add.addEventListener("click", handleAdd);
-minus.addEventListener("click", handleMinus);
-
-const onChange = () => {
-  number.innerText = countStore.getState();
-};
-
-countStore.subscribe(onChange);
+form.addEventListener("submit", onSubmit);
