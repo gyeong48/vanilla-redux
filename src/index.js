@@ -1,21 +1,73 @@
-//vanilla js todoList는 데이터가 존재하지 않는다. 단지 html을 수정하는 것이다.
-//예를 들어 우리가 todo를 삭제하고 싶다면 데이터(상태)가 없기 때문에 그 일을 수행할 수 없다.
-//이 때 배열을 사용하여 데이터를 만들고, 로컬 저장소에 데이터를 저장하면 비로서 애플리케이션에 데이터가 존재하게 된다.
+import { createStore } from "redux";
+
 const form = document.querySelector("form");
 const input = document.querySelector("input");
 const ul = document.querySelector("ul");
+const ADD_TODO = "ADD_TODO";
+const DELETE_TODO = "DELETE_TODO";
 
-const createTodo = (todo) => {
-  const li = document.createElement("li");
-  li.innerText = todo;
-  ul.appendChild(li);
+const addTodo = (text) => {
+  return {
+    type: ADD_TODO,
+    text,
+  };
 };
+
+const deleteTodo = (id) => {
+  return {
+    type: DELETE_TODO,
+    id,
+  };
+};
+
+const dispatchDeleteTodo = (e) => {
+  const id = parseInt(e.target.parentNode.id);
+  store.dispatch(deleteTodo(id));
+};
+
+const dispatchAddTodo = (text) => {
+  store.dispatch(addTodo(text));
+};
+
+//원래 상태에서 변하게 하지 말고 새로운 상태를 만들어 반환해야 한다. 새로운 상태는 메모리 상에 새로운 주소를 할당 받는다.
+//새로운 배열은 새로운 주소를 메모리상에사 할당 받는다. 이 때 리덕스가 상태가 변경된지 감지할 수 있다.
+//원래 상태에 조작을 가하면 같은 메모리 주소를 사용하게 되는 것이므로 리덕스는 상태 변화를 감지하지 못한다.
+//메모리 주소의 변화가 곧 상태의 변화 이므로 subscribe가 listenr를 통해 상태 변경되었을 때 할 행동이 작동될 수 있다.
+const reducer = (state = [], action) => {
+  switch (action.type) {
+    case ADD_TODO:
+      return [...state, { text: action.text, id: Date.now() }];
+    case DELETE_TODO:
+      return state.filter((toDo) => toDo.id !== action.id);
+    default:
+      return state;
+  }
+};
+
+const store = createStore(reducer);
+
+const paintTodos = () => {
+  const toDos = store.getState();
+  ul.innerHTML = "";
+  toDos.forEach((todo) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.innerText = "DEL";
+    btn.addEventListener("click", dispatchDeleteTodo);
+    li.id = todo.id;
+    li.innerText = todo.text;
+    li.appendChild(btn);
+    ul.appendChild(li);
+  });
+};
+
+store.subscribe(paintTodos);
 
 const onSubmit = (e) => {
   e.preventDefault();
   const todo = input.value;
   input.value = "";
-  createTodo(todo);
+  dispatchAddTodo(todo);
 };
 
 form.addEventListener("submit", onSubmit);
